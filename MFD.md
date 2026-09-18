@@ -1,4 +1,4 @@
-# Tronloop Node Orchestrator — Proje ve firmware bağlamı
+# tronloop-clusterpilot-can-processor — Proje ve firmware bağlamı
 
 Son inceleme: 2026-09-18.
 
@@ -79,7 +79,7 @@ Bu komutların çoğu firmware'de henüz yalnızca log üretir. Fiziksel işlem 
 
 ### Çalışma yapısı
 
-- `Tronloop.NodeOrchestrator.csproj`: .NET 10 Worker; `Microsoft.Extensions.Hosting` ve `Microsoft.Extensions.Hosting.Systemd` 10.0.9, MQTTnet 5.2.0.1603 referansları.
+- `Tronloop.ClusterPilot.CanProcessor.csproj`: .NET 10 Worker; `Microsoft.Extensions.Hosting` ve `Microsoft.Extensions.Hosting.Systemd` 10.0.9, MQTTnet 5.2.0.1603 referansları.
 - `Program.cs`: generic host oluşturur ve `Worker` servis kaydını yapar. Systemd paketi mevcut olsa da burada özel systemd entegrasyon çağrısı yoktur.
 - `CanIsoTpListener.cs`: `libc` P/Invoke üzerinden Linux SocketCAN ISO-TP soketi açar, okur ve yazar. Mevcut taşıma kodu Linux'a yöneliktir.
 - `Worker.cs`: CAN dinleyicilerini başlatır, dummy CAN gönderimini ve MQTT bağlantısını yürütür.

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 
-namespace Tronloop.NodeOrchestrator;
+namespace Tronloop.ClusterPilot.CanProcessor;
 
 public sealed class Worker : BackgroundService
 {

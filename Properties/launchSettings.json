@@ -1,7 +1,7 @@
 ﻿{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "Tronloop.NodeOrchestrator": {
+    "Tronloop.ClusterPilot.CanProcessor": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "environmentVariables": {
