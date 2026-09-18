@@ -161,9 +161,9 @@ public sealed class CanIsoTpListener : IDisposable
             var timeout = new Timeval { Seconds = 1, Microseconds = 0 };
             if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, ref timeout, Marshal.SizeOf<Timeval>()) != 0)
             {
-                _logger.LogWarning(
-                    "Failed to set ISO-TP receive timeout (errno={Errno})",
-                    Marshal.GetLastWin32Error());
+                // The listener must periodically return from read to observe cancellation.
+                throw new InvalidOperationException(
+                    $"Failed to set ISO-TP receive timeout (errno={Marshal.GetLastWin32Error()}).");
             }
 
             var addr = new SockaddrCan

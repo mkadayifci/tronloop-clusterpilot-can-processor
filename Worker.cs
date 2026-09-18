@@ -28,6 +28,7 @@ public sealed class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        using var canCancellation = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
         List<CanIsoTpListener> canListeners = [];
         List<Task> canTasks = [];
 
@@ -55,8 +56,8 @@ public sealed class Worker : BackgroundService
                     var canListener = new CanIsoTpListener(canInterface, rxId, txId, _logger);
                     canListener.Open();
                     canListeners.Add(canListener);
-                    canTasks.Add(canListener.ListenAsync(stoppingToken));
-                    canTasks.Add(SendDummyCanMessagesAsync(canListener, deviceLabel, stoppingToken));
+                    canTasks.Add(canListener.ListenAsync(canCancellation.Token));
+                    canTasks.Add(SendDummyCanMessagesAsync(canListener, deviceLabel, canCancellation.Token));
 
                     _logger.LogInformation("CAN ISO-TP listener started on {Device}", deviceLabel);
                 }
@@ -125,7 +126,7 @@ public sealed class Worker : BackgroundService
                 await Task.Delay(5000, stoppingToken);
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
             _logger.LogInformation("Worker stopping");
         }
@@ -135,6 +136,31 @@ public sealed class Worker : BackgroundService
         }
         finally
         {
+            // MQTT failures can reach here without the host's stoppingToken being cancelled.
+            // Stop both CAN loops and wait for in-flight I/O before disposing their sockets.
+            canCancellation.Cancel();
+
+            foreach (var canTask in canTasks)
+            {
+                try
+                {
+                    await canTask;
+                }
+                catch (OperationCanceledException) when (canCancellation.IsCancellationRequested)
+                {
+                    // Normal shutdown
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "CAN task stopped with error");
+                }
+            }
+
+            foreach (var canListener in canListeners)
+            {
+                canListener.Dispose();
+            }
+
             try
             {
                 if (client.IsConnected)
@@ -146,27 +172,6 @@ public sealed class Worker : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed while disconnecting MQTT client");
-            }
-
-            foreach (var canListener in canListeners)
-            {
-                canListener.Dispose();
-            }
-
-            foreach (var canTask in canTasks)
-            {
-                try
-                {
-                    await canTask;
-                }
-                catch (OperationCanceledException)
-                {
-                    // Normal shutdown
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "CAN task stopped with error");
-                }
             }
         }
     }
@@ -185,7 +190,7 @@ public sealed class Worker : BackgroundService
             try
             {
                 canListener.Send(payload);
-                _logger.LogWarning("Sent dummy ISO-TP message to {Device x}", deviceLabel);
+                _logger.LogWarning("Sent dummy ISO-TP message to {Device}", deviceLabel);
             }
             catch (Exception ex)
             {
