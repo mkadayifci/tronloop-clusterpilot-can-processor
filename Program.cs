@@ -1,4 +1,4 @@
-using Tronloop.ClusterPilot.CanProcessor;
+using Tronloop.ClusterPilot.Engine;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();

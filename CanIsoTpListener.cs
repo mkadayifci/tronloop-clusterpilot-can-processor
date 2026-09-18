@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 
-namespace Tronloop.ClusterPilot.CanProcessor;
+namespace Tronloop.ClusterPilot.Engine;
 
 public sealed class CanIsoTpListener : IDisposable
 {
