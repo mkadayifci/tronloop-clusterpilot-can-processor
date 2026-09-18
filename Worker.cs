@@ -48,7 +48,7 @@ public sealed class Worker : BackgroundService
             for (var i = 0; i < canRxIds.Count; i++)
             {
                 var rxId = canRxIds[i];
-                rxId = canRxIds[i];
+
 
                 var txId = canTxIds[i];
                 var deviceLabel = $"{canInterface} rx=0x{rxId:X} tx=0x{txId:X}";
